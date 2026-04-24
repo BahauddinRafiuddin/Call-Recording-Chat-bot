@@ -5,6 +5,8 @@ import { ConfigModule } from '@nestjs/config';
 import { MongoModule } from './database/mongo.module';
 import { CallsModule } from './modules/calls/calls.module';
 import { UploadModule } from './modules/upload/upload.module';
+import { QueueModule } from './modules/queue/queue.module';
+import { TranscriptionModule } from './modules/transcription/transcription.module';
 
 @Module({
   imports: [
@@ -13,7 +15,9 @@ import { UploadModule } from './modules/upload/upload.module';
     }),
     MongoModule,
     CallsModule,
-    UploadModule
+    UploadModule,
+    QueueModule,
+    TranscriptionModule,
   ],
   controllers: [AppController],
   providers: [AppService],
