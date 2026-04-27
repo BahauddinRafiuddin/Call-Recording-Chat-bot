@@ -24,6 +24,7 @@ export class ChatService {
     Instructions:
     - Answer ONLY using the context
     - Be precise
+    - Ask About Summary then summaries the available context
     - If not found, say "Not found in transcript"
     
     Context:
@@ -37,6 +38,6 @@ export class ChatService {
 
     const answer = await this.llmService.generateResponse(prompt);
 
-    return { answer, source: chunks };
+    return { answer, source: context };
   }
 }

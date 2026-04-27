@@ -1,4 +1,4 @@
-import { Controller, Delete, Param } from '@nestjs/common';
+import { Controller, Delete, Get, Param } from '@nestjs/common';
 import { CallsService } from './calls.service';
 
 @Controller('calls')
@@ -8,4 +8,10 @@ export class CallsController {
   async deleteCall(@Param('id') id: string) {
     return this.callService.deleteCall(id)
   }
+
+  @Get()
+    async getAllCalls(){
+      return this.callService.findAll()
+    }
+  
 }
