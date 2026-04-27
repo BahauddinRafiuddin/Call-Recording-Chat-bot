@@ -3,13 +3,17 @@ import { Worker } from 'bullmq';
 import { QUEUE_NAME } from '../queue/queue.constants';
 import { TranscriptionService } from './transcription.service';
 import { CallsService } from '../calls/calls.service';
+import { ChunkingService } from '../chunking/chunking.service';
+import { VectorService } from '../vector/vector.service';
 
 @Injectable()
 export class TranscriptionProcessor implements OnModuleInit {
   constructor(
     private transcriptionService: TranscriptionService,
     private callsService: CallsService,
-  ) {}
+    private chunkingService: ChunkingService,
+    private vectorService: VectorService,
+  ) { }
 
   onModuleInit() {
     const worker = new Worker(
@@ -27,14 +31,25 @@ export class TranscriptionProcessor implements OnModuleInit {
           const transcript =
             await this.transcriptionService.transcribe(filePath);
 
-          // 3. Save result
-          await this.callsService.updateTranscript(callId, transcript);
+          // 3. CHUNKING
+          const chunks = this.chunkingService.splitText(
+            transcript,
+            callId.toString(),
+          );
 
-          console.log('Transcription completed:', callId);
+          // 4. VECTOR DB STORAGE
+          await this.vectorService.addChunks(chunks);
+          console.log('Chunks stored in Chroma');
+
+          // 5. Save transcript + completed
+          await this.callsService.updateTranscript(callId, transcript);
+          await this.callsService.updateStatus(callId, 'completed');
+
+          console.log('Transcription + embedding completed:', callId);
         } catch (error) {
           console.error('Error processing job:', error);
-
           await this.callsService.updateStatus(callId, 'failed');
+          throw error;
         }
       },
       {
@@ -42,6 +57,8 @@ export class TranscriptionProcessor implements OnModuleInit {
           host: 'localhost',
           port: 6379,
         },
+        lockDuration: 10 * 60 * 1000, // 10 minutes
+        stalledInterval: 60 * 1000,   // check every 1 min
       },
     );
 

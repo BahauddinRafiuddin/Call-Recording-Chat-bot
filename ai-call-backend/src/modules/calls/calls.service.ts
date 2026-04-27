@@ -2,11 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Call, CallDocument } from './call.schema';
 import { Model } from 'mongoose';
+import * as fs from 'fs';
+import { VectorService } from '../vector/vector.service';
+
 
 @Injectable()
 export class CallsService {
   constructor(
     @InjectModel(Call.name) private callModel: Model<CallDocument>,
+    private vectorService: VectorService
   ) { }
 
   async create(data: Partial<Call>) {
@@ -31,5 +35,26 @@ export class CallsService {
       transcript,
       status: 'completed',
     });
+  }
+
+  async deleteCall(callId: string) {
+    const call = await this.callModel.findById(callId);
+
+    if (!call) {
+      throw new Error('Call not found');
+    }
+
+    // Delete from Chroma
+    await this.vectorService.deleteByCallId(callId);
+
+    // Delete file from disk
+    if (fs.existsSync(call.filePath)) {
+      fs.unlinkSync(call.filePath);
+    }
+
+    // Delete Mongo record
+    await this.callModel.findByIdAndDelete(callId);
+
+    return { message: 'Call deleted successfully' };
   }
 }

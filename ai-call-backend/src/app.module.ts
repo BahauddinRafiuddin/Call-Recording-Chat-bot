@@ -7,6 +7,7 @@ import { CallsModule } from './modules/calls/calls.module';
 import { UploadModule } from './modules/upload/upload.module';
 import { QueueModule } from './modules/queue/queue.module';
 import { TranscriptionModule } from './modules/transcription/transcription.module';
+import { ChatModule } from './modules/chat/chat.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { TranscriptionModule } from './modules/transcription/transcription.modul
     UploadModule,
     QueueModule,
     TranscriptionModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],
