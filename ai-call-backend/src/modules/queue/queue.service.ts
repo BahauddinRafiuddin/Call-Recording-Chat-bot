@@ -15,9 +15,10 @@ export class QueueService implements OnModuleInit {
   }
 
   async addTranscriptionJob(data: any) {
-    await this.queue.add('transcribe', data), {
+    await this.queue.add('transcribe', data, {
       attempts: 3, // retry if fails
       removeOnComplete: true,
-    }
+      removeOnFail: true, 
+    })
   }
 }
