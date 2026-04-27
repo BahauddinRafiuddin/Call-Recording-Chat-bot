@@ -13,7 +13,7 @@ export class ChatService {
     const result = await this.vectorService.search(question, callId);
     const chunks = result.documents;
     if (!chunks || chunks.length === 0) {
-      return { answer: "No relevant information found." };
+      return { answer: "No relevant information found.", sources: [], };
     }
 
     const context = chunks.join('\n');
@@ -23,7 +23,7 @@ export class ChatService {
 
     Instructions:
     - Answer ONLY using the context
-    - Be precise
+    - Be clear and concise
     - Ask About Summary then summaries the available context
     - If not found, say "Not found in transcript"
     
@@ -38,6 +38,6 @@ export class ChatService {
 
     const answer = await this.llmService.generateResponse(prompt);
 
-    return { answer, source: context };
+    return { answer, sources: chunks };
   }
 }
