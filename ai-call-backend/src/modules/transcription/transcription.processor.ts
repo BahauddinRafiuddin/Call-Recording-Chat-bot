@@ -5,6 +5,7 @@ import { TranscriptionService } from './transcription.service';
 import { CallsService } from '../calls/calls.service';
 import { ChunkingService } from '../chunking/chunking.service';
 import { VectorService } from '../vector/vector.service';
+import { LLMService } from '../llm/llm.service';
 
 @Injectable()
 export class TranscriptionProcessor implements OnModuleInit {
@@ -13,6 +14,7 @@ export class TranscriptionProcessor implements OnModuleInit {
     private callsService: CallsService,
     private chunkingService: ChunkingService,
     private vectorService: VectorService,
+    private llmService: LLMService
   ) { }
 
   onModuleInit() {
@@ -39,11 +41,17 @@ export class TranscriptionProcessor implements OnModuleInit {
             call!.userId
           );
 
-          // 4. VECTOR DB STORAGE
+          // 4.Storing Summary In DB
+          const topChunks = chunks.slice(0, 5);
+          const combinedText = topChunks.map(c => c.content).join("\n");
+          const summary = await this.llmService.generateResponse(`Summarize this call in 3-4 bullet points.Transcript:${combinedText}`)
+          await this.callsService.updateCallSummary(callId, summary);
+
+          // 5. VECTOR DB STORAGE
           await this.vectorService.addChunks(chunks);
           console.log('Chunks stored in Chroma');
 
-          // 5. Save transcript + completed
+          // 6. Save transcript + completed
           await this.callsService.updateTranscript(callId, transcript);
           await this.callsService.updateStatus(callId, 'completed');
 

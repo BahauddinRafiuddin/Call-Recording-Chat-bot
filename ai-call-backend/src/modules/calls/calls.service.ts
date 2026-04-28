@@ -64,4 +64,10 @@ export class CallsService {
       status: 'completed'
     }).sort({ createdAt: -1 });
   }
+
+  async updateCallSummary(callId: string, summary: string) {
+  return this.callModel.findByIdAndUpdate(callId, {
+    shortSummary: summary
+  });
+}
 }

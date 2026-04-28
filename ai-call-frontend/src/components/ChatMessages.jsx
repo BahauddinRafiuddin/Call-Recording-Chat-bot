@@ -21,7 +21,7 @@ const ChatMessages = ({ messages }) => {
 const MessageItem = ({ msg }) => {
   const [showSources, setShowSources] = useState(false);
 
-  // 🔥 LOADER
+  // LOADER
   if (msg.isLoading) {
     return (
       <div className="flex items-center gap-3">
@@ -36,7 +36,7 @@ const MessageItem = ({ msg }) => {
     );
   }
 
-  // 🔥 MULTI-CALL
+  //  MULTI-CALL
   if (msg.type === "multi_call") {
     return (
       <div className="flex items-start gap-3">
@@ -64,7 +64,7 @@ const MessageItem = ({ msg }) => {
     );
   }
 
-  // 🔥 NORMAL (SINGLE CALL + USER)
+  // NORMAL (SINGLE CALL + USER)
   return (
     <div className={`flex items-end gap-3 ${msg.role === "user" ? "flex-row-reverse" : ""}`}>
       {/* Avatar */}
@@ -87,7 +87,7 @@ const MessageItem = ({ msg }) => {
           </div>
         )}
 
-        {/* 🔥 SINGLE CALL SOURCES */}
+        {/*  SINGLE CALL SOURCES */}
         {msg.role === "ai" && msg.sources?.length > 0 && (
           <div className="mt-3 pt-2.5 border-t border-gray-100">
             <button
@@ -119,7 +119,7 @@ const MessageItem = ({ msg }) => {
   );
 };
 
-// 🔥 MULTI CALL BLOCK (PER CALL UI)
+// MULTI CALL BLOCK (PER CALL UI)
 const MultiCallBlock = ({ item, index }) => {
   const [showSources, setShowSources] = useState(false);
 

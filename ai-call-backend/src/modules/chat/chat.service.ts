@@ -31,11 +31,20 @@ export class ChatService {
     // 1. Get all calls
     const calls = await this.callsService.findAllByUser(userId);
 
-    // 🔥 OPTIONAL OPTIMIZATION (later)
-    // filter calls using summary
+    const scoredCalls = calls.map(call => {
+      const summary = call.shortSummary || "";
+
+      const score = this.calculateRelevance(question, summary);
+
+      return { call, score };
+    });
+
+    const topCalls = scoredCalls
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 3); // only top 3 calls
 
     const results = await Promise.all(
-      calls.map(async (call) => {
+      topCalls.map(async ({ call }) => {
 
         const result = await this.vectorService.search(
           question,
@@ -97,5 +106,18 @@ export class ChatService {
     else confidence = "low";
 
     return { answer, confidence, sources: chunks };
+  }
+
+  private calculateRelevance(question: string, summary: string): number {
+    const q = question.toLowerCase();
+    const s = summary.toLowerCase();
+
+    let score = 0;
+
+    q.split(" ").forEach(word => {
+      if (s.includes(word)) score++;
+    });
+
+    return score;
   }
 }
