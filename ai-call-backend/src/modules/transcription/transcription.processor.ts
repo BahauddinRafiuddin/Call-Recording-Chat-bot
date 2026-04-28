@@ -32,9 +32,11 @@ export class TranscriptionProcessor implements OnModuleInit {
             await this.transcriptionService.transcribe(filePath);
 
           // 3. CHUNKING
+          const call = await this.callsService.findById(callId);
           const chunks = this.chunkingService.splitText(
             transcript,
             callId.toString(),
+            call!.userId
           );
 
           // 4. VECTOR DB STORAGE

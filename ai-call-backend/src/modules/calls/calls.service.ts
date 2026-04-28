@@ -37,7 +37,7 @@ export class CallsService {
     });
   }
 
-  async deleteCall(callId: string) {
+  async deleteCall(callId: string, userId: string) {
     const call = await this.callModel.findById(callId);
 
     if (!call) {
@@ -45,7 +45,7 @@ export class CallsService {
     }
 
     // Delete from Chroma
-    await this.vectorService.deleteByCallId(callId);
+    await this.vectorService.deleteByCallId(callId, userId);
 
     // Delete file from disk
     if (fs.existsSync(call.filePath)) {
@@ -56,5 +56,12 @@ export class CallsService {
     await this.callModel.findByIdAndDelete(callId);
 
     return { message: 'Call deleted successfully' };
+  }
+
+  async findAllByUser(userId: string) {
+    return this.callModel.find({
+      userId,
+      status: 'completed'
+    }).sort({ createdAt: -1 });
   }
 }

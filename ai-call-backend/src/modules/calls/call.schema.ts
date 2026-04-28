@@ -30,6 +30,15 @@ export class Call {
     enum: ['audio/mpeg', 'audio/wav', 'audio/mp4'],
   })
   fileType!: string;
+
+  @Prop({ required: true })
+  userId!: string;
+
+  @Prop({ default: null })
+  shortSummary!: string;
+
+  @Prop({ default: null })
+  detailedSummary!: string;
 }
 
 export const CallSchema = SchemaFactory.createForClass(Call);

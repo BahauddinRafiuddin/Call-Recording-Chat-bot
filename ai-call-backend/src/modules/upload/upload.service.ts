@@ -9,7 +9,7 @@ export class UploadService {
     private queueService: QueueService
   ) { }
 
-  async handleUpload(file: Express.Multer.File) {
+  async handleUpload(file: Express.Multer.File, userId: string) {
 
     const normalizeMimeType = (mime: string): string => {
       if (mime.includes('wav')) return 'audio/wav';
@@ -24,6 +24,7 @@ export class UploadService {
       fileSize: file.size,
       fileType: normalizeMimeType(file.mimetype),
       status: 'uploaded',
+      userId,
     });
 
     await this.queueService.addTranscriptionJob({

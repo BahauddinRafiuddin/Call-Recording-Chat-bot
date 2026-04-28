@@ -38,6 +38,7 @@ export class VectorService implements OnModuleInit {
 
     const metadatas = chunks.map(c => ({
       callId: c.callId,
+      userId: c.userId,
       chunkIndex: c.chunkIndex,
       startWord: c.startWord,
       endWord: c.endWord,
@@ -63,24 +64,38 @@ export class VectorService implements OnModuleInit {
   //   };
   // }
 
-  async deleteByCallId(callId: string) {
+  async deleteByCallId(callId: string, userId: string) {
     try {
       await this.collection.delete({
-        where: { callId },
+        where: {
+          $and: [
+            { callId: callId },
+            { userId: userId }
+          ]
+        }
       });
     } catch (error) {
       console.error('Vector delete failed', error);
     }
   }
 
-  async search(query: string, callId?: string) {
+  async search(query: string, userId: string, callId?: string) {
     const queryType = this.classifyQuery(query);
     const nResults = this.getResultCount(queryType);
 
     const results = await this.collection.query({
       queryTexts: [query],
       nResults,
-      where: callId ? { callId } : undefined,
+      where: callId
+        ? {
+          $and: [
+            { callId: callId },
+            { userId: userId }
+          ]
+        }
+        : {
+          userId: userId
+        }
     });
 
     const documents = results?.documents?.[0] ?? [];

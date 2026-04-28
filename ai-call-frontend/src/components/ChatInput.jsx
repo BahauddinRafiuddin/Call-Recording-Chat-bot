@@ -68,12 +68,23 @@ const ChatInput = ({ callId, onNewMessage }) => {
         callId: callId || undefined,
       });
 
-      onNewMessage({
-        role: "ai",
-        text: res.data.answer || "⚠️ No answer found in transcript.",
-        replaceLast: true,
-        sources: res.data.sources || [],
-      });
+      const data = res.data;
+
+      if (data.type === "multi_call") {
+        onNewMessage({
+          role: "ai",
+          type: "multi_call",
+          results: data.results, // 👈 full structured data
+          replaceLast: true,
+        });
+      } else {
+        onNewMessage({
+          role: "ai",
+          text: data.answer || "⚠️ No answer found in transcript.",
+          replaceLast: true,
+          sources: data.sources || [],
+        });
+      }
     } catch {
       onNewMessage({
         role: "ai",

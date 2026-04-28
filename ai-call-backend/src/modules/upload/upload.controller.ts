@@ -1,4 +1,4 @@
-import { Controller, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Controller, Headers, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { UploadService } from './upload.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from '../../common/multer/multer.config';
@@ -14,7 +14,8 @@ export class UploadController {
       fileFilter: audioFileFilter,
     }),
   )
-  async uploadFile(@UploadedFile() file: Express.Multer.File) {
-    return this.uploadService.handleUpload(file);
+  async uploadFile(@Headers('x-user-id') userId: string, @UploadedFile() file: Express.Multer.File) {
+     if (!userId) throw new Error("User ID missing");
+    return this.uploadService.handleUpload(file,userId);
   }
 }

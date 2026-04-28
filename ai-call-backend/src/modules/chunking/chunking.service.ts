@@ -6,9 +6,9 @@ export class ChunkingService {
   private CHUNK_SIZE = 500;
   private OVERLAP = 100;
 
-  splitText(text: string, callId: string): Chunk[] {
+  splitText(text: string, callId: string, userId: string): Chunk[] {
     const words = text.split(/\s+/);
-    const chunks: Chunk[] = []; 
+    const chunks: Chunk[] = [];
 
     let start = 0;
     let chunkIndex = 0;
@@ -23,6 +23,7 @@ export class ChunkingService {
         content,
         chunkIndex,
         callId,
+        userId,
         startWord: start,
         endWord: end,
       });
