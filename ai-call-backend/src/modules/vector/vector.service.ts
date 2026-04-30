@@ -51,18 +51,7 @@ export class VectorService implements OnModuleInit {
     });
   }
 
-  // async search(query: string, callId?: string) {
-  //   const results = await this.collection.query({
-  //     queryTexts: [query],
-  //     nResults: 5,
-  //     where: callId ? { callId } : undefined,
-  //   });
 
-  //   return {
-  //     documents: results.documents[0],
-  //     metadatas: results.metadatas[0],
-  //   };
-  // }
 
   async deleteByCallId(callId: string, userId: string) {
     try {
@@ -179,4 +168,34 @@ export class VectorService implements OnModuleInit {
     }
   }
 
+  async addCallSummary(summary: string, callId: string, userId: string) {
+    await this.collection.add({
+      ids: [`summary_${callId}`],
+      documents: [summary],
+      metadatas: [
+        {
+          callId,
+          userId,
+          type: "summary", // 🔥 IMPORTANT
+        }
+      ],
+    });
+  }
+
+  async findRelevantCalls(query: string, userId: string): Promise<string[]> {
+  const results = await this.collection.query({
+    queryTexts: [query],
+    nResults: 3,
+    where: {
+      $and: [
+        { userId },
+        { type: "summary" } //  ONLY summaries
+      ]
+    }
+  });
+
+  const metadatas = results?.metadatas?.[0] ?? [];
+
+  return metadatas.map((m: any) => m.callId);
+}
 }

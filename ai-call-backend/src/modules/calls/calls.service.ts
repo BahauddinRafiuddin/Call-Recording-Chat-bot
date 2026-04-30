@@ -66,8 +66,12 @@ export class CallsService {
   }
 
   async updateCallSummary(callId: string, summary: string) {
-  return this.callModel.findByIdAndUpdate(callId, {
-    shortSummary: summary
-  });
-}
+    return this.callModel.findByIdAndUpdate(callId, {
+      shortSummary: summary
+    });
+  }
+
+  async findByIds(ids: string[]) {
+    return this.callModel.find({ _id: { $in: ids } });
+  }
 }

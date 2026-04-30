@@ -26,51 +26,88 @@ export class ChatService {
     return this.generateAnswer(question, result);
   }
 
-  async handleMultiCall(question: string, userId: string) {
+    async handleMultiCall(question: string, userId: string) {
 
-    // 1. Get all calls
-    const calls = await this.callsService.findAllByUser(userId);
+      //  STEP 1: find relevant callIds using embeddings
+      const callIds = await this.vectorService.findRelevantCalls(question, userId);
 
-    const scoredCalls = calls.map(call => {
-      const summary = call.shortSummary || "";
+      //  STEP 2: get those calls from DB
+      const calls = await this.callsService.findByIds(callIds);
 
-      const score = this.calculateRelevance(question, summary);
+      const results = await Promise.all(
+        calls.map(async (call) => {
 
-      return { call, score };
-    });
+          const result = await this.vectorService.search(
+            question,
+            userId,
+            call._id.toString()
+          );
 
-    const topCalls = scoredCalls
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 3); // only top 3 calls
+          if (!result.documents.length) return null;
 
-    const results = await Promise.all(
-      topCalls.map(async ({ call }) => {
+          const response = await this.generateAnswer(question, result);
 
-        const result = await this.vectorService.search(
-          question,
-          userId,
-          call._id.toString()
-        );
+          return {
+            callId: call._id,
+            fileName: call.fileName,
+            answer: response.answer,
+            confidence: response.confidence,
+            sources: response.sources
+          };
+        })
+      );
 
-        if (!result.documents.length) return null;
+      return {
+        type: "multi_call",
+        resultslog:results,
+        results: results.filter(Boolean),
+      };
+    }
+  // async handleMultiCall(question: string, userId: string) {
 
-        const response = await this.generateAnswer(question, result);
+  //   // 1. Get all calls
+  //   const calls = await this.callsService.findAllByUser(userId);
 
-        return {
-          callId: call._id,
-          fileName: call.fileName,
-          answer: response.answer,
-          confidence: response.confidence,
-          sources: response.sources
-        };
-      })
-    );
+  //   const scoredCalls = calls.map(call => {
+  //     const summary = call.shortSummary || "";
 
-    return {
-      type: "multi_call",
-      results: results.filter(Boolean),
-    };
-  }
+  //     const score = this.calculateRelevance(question, summary);
+
+  //     return { call, score };
+  //   });
+
+  //   const topCalls = scoredCalls
+  //     .sort((a, b) => b.score - a.score)
+  //     .slice(0, 3); // only top 3 calls
+
+  //   const results = await Promise.all(
+  //     topCalls.map(async ({ call }) => {
+
+  //       const result = await this.vectorService.search(
+  //         question,
+  //         userId,
+  //         call._id.toString()
+  //       );
+
+  //       if (!result.documents.length) return null;
+
+  //       const response = await this.generateAnswer(question, result);
+
+  //       return {
+  //         callId: call._id,
+  //         fileName: call.fileName,
+  //         answer: response.answer,
+  //         confidence: response.confidence,
+  //         sources: response.sources
+  //       };
+  //     })
+  //   );
+
+  //   return {
+  //     type: "multi_call",
+  //     results: results.filter(Boolean),
+  //   };
+  // }
 
   private async generateAnswer(question: string, result: any) {
     const chunks = result.documents;
@@ -108,16 +145,4 @@ export class ChatService {
     return { answer, confidence, sources: chunks };
   }
 
-  private calculateRelevance(question: string, summary: string): number {
-    const q = question.toLowerCase();
-    const s = summary.toLowerCase();
-
-    let score = 0;
-
-    q.split(" ").forEach(word => {
-      if (s.includes(word)) score++;
-    });
-
-    return score;
-  }
 }

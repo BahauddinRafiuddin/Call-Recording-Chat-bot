@@ -6,6 +6,7 @@ import { CallsService } from '../calls/calls.service';
 import { ChunkingService } from '../chunking/chunking.service';
 import { VectorService } from '../vector/vector.service';
 import { LLMService } from '../llm/llm.service';
+import * as fs from 'fs';
 
 @Injectable()
 export class TranscriptionProcessor implements OnModuleInit {
@@ -26,38 +27,61 @@ export class TranscriptionProcessor implements OnModuleInit {
         console.log('Processing job:', callId);
 
         try {
-          // 1. Update status
           await this.callsService.updateStatus(callId, 'processing');
 
-          // 2. Transcribe
-          const transcript =
-            await this.transcriptionService.transcribe(filePath);
-
-          // 3. CHUNKING
           const call = await this.callsService.findById(callId);
+
+          // 🔥 1. SPLIT AUDIO
+          const segments = await this.transcriptionService.splitAudio(filePath);
+
+          console.log("Segments:", segments.length);
+
+          // 🔥 2. PARALLEL TRANSCRIPTION
+          const transcripts = await Promise.all(
+            segments.map(seg => this.transcriptionService.transcribe(seg))
+          );
+
+          const transcript = transcripts.join(" ");
+
+          // 🔥 CLEAN TEMP FILES
+          segments.forEach(f => fs.unlinkSync(f));
+
+          // 🔥 3. CHUNKING
           const chunks = this.chunkingService.splitText(
             transcript,
             callId.toString(),
             call!.userId
           );
 
-          // 4.Storing Summary In DB
+          // 🔥 4. STORE EMBEDDINGS FIRST
+          await this.vectorService.addChunks(chunks);
+
+          // 🔥 5. SUMMARY
           const topChunks = chunks.slice(0, 5);
           const combinedText = topChunks.map(c => c.content).join("\n");
-          const summary = await this.llmService.generateResponse(`Summarize this call in 3-4 bullet points.Transcript:${combinedText}`)
+
+          const summary = await this.llmService.generateResponse(`
+          Summarize this call in 3-4 bullet points:
+
+          ${combinedText}
+          `);
+
+          await this.vectorService.addCallSummary(
+            summary,
+            callId.toString(),
+            call!.userId
+          );
+
           await this.callsService.updateCallSummary(callId, summary);
 
-          // 5. VECTOR DB STORAGE
-          await this.vectorService.addChunks(chunks);
-          console.log('Chunks stored in Chroma');
-
-          // 6. Save transcript + completed
+          // 🔥 6. SAVE FINAL DATA
           await this.callsService.updateTranscript(callId, transcript);
           await this.callsService.updateStatus(callId, 'completed');
 
-          console.log('Transcription + embedding completed:', callId);
+          console.log('Completed:', callId);
+
         } catch (error) {
-          console.error('Error processing job:', error);
+          console.error('Error:', error);
           await this.callsService.updateStatus(callId, 'failed');
           throw error;
         }
