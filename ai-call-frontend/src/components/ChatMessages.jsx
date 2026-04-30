@@ -30,7 +30,7 @@ const MessageItem = ({ msg }) => {
         </div>
         <div className="bg-white border border-gray-200 px-4 py-2.5 rounded-2xl rounded-tl-sm text-sm text-gray-500 flex items-center gap-2.5 shadow-sm">
           <span className="w-3.5 h-3.5 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin" />
-          Generating response...
+          Generating response.....
         </div>
       </div>
     );

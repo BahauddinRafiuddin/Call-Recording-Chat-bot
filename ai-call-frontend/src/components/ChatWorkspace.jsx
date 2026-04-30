@@ -8,7 +8,7 @@ const ChatWorkspace = ({ onMenuClick }) => {
   const [messages, setMessages] = useState([
     {
       role: "ai",
-      text: "Hi! Ask me anything about your call recordings. Select a specific call above or query across all of them.",
+      text: "Hi, Ask me anything about your call recordings. Select a specific call above or query across all of them.",
     },
   ]);
 
