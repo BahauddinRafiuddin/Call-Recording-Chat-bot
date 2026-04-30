@@ -26,43 +26,43 @@ export class ChatService {
     return this.generateAnswer(question, result);
   }
 
-    async handleMultiCall(question: string, userId: string) {
+  async handleMultiCall(question: string, userId: string) {
 
-      //  STEP 1: find relevant callIds using embeddings
-      const callIds = await this.vectorService.findRelevantCalls(question, userId);
+    //  STEP 1: find relevant callIds using embeddings
+    const callIds = await this.vectorService.findRelevantCalls(question, userId);
 
-      //  STEP 2: get those calls from DB
-      const calls = await this.callsService.findByIds(callIds);
+    //  STEP 2: get those calls from DB
+    const calls = await this.callsService.findByIds(callIds);
 
-      const results = await Promise.all(
-        calls.map(async (call) => {
+    const results = await Promise.all(
+      calls.map(async (call) => {
 
-          const result = await this.vectorService.search(
-            question,
-            userId,
-            call._id.toString()
-          );
+        const result = await this.vectorService.search(
+          question,
+          userId,
+          call._id.toString()
+        );
 
-          if (!result.documents.length) return null;
+        if (!result.documents.length) return null;
 
-          const response = await this.generateAnswer(question, result);
+        const response = await this.generateAnswer(question, result);
 
-          return {
-            callId: call._id,
-            fileName: call.fileName,
-            answer: response.answer,
-            confidence: response.confidence,
-            sources: response.sources
-          };
-        })
-      );
+        return {
+          callId: call._id,
+          fileName: call.fileName,
+          answer: response.answer,
+          confidence: response.confidence,
+          sources: response.sources
+        };
+      })
+    );
 
-      return {
-        type: "multi_call",
-        resultslog:results,
-        results: results.filter(Boolean),
-      };
-    }
+    return {
+      type: "multi_call",
+      resultslog: results,
+      results: results.filter(Boolean),
+    };
+  }
   // async handleMultiCall(question: string, userId: string) {
 
   //   // 1. Get all calls

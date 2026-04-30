@@ -31,32 +31,32 @@ export class TranscriptionProcessor implements OnModuleInit {
 
           const call = await this.callsService.findById(callId);
 
-          // 🔥 1. SPLIT AUDIO
+          // 1. SPLIT AUDIO
           const segments = await this.transcriptionService.splitAudio(filePath);
 
           console.log("Segments:", segments.length);
 
-          // 🔥 2. PARALLEL TRANSCRIPTION
+          // 2. PARALLEL TRANSCRIPTION
           const transcripts = await Promise.all(
             segments.map(seg => this.transcriptionService.transcribe(seg))
           );
 
           const transcript = transcripts.join(" ");
 
-          // 🔥 CLEAN TEMP FILES
+          // CLEAN TEMP FILES
           segments.forEach(f => fs.unlinkSync(f));
 
-          // 🔥 3. CHUNKING
+          // 3. CHUNKING
           const chunks = this.chunkingService.splitText(
             transcript,
             callId.toString(),
             call!.userId
           );
 
-          // 🔥 4. STORE EMBEDDINGS FIRST
+          // 4. STORE EMBEDDINGS FIRST
           await this.vectorService.addChunks(chunks);
 
-          // 🔥 5. SUMMARY
+          // 5. SUMMARY
           const topChunks = chunks.slice(0, 5);
           const combinedText = topChunks.map(c => c.content).join("\n");
 
@@ -74,7 +74,7 @@ export class TranscriptionProcessor implements OnModuleInit {
 
           await this.callsService.updateCallSummary(callId, summary);
 
-          // 🔥 6. SAVE FINAL DATA
+          // 6. SAVE FINAL DATA
           await this.callsService.updateTranscript(callId, transcript);
           await this.callsService.updateStatus(callId, 'completed');
 

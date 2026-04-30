@@ -51,8 +51,6 @@ export class VectorService implements OnModuleInit {
     });
   }
 
-
-
   async deleteByCallId(callId: string, userId: string) {
     try {
       await this.collection.delete({
