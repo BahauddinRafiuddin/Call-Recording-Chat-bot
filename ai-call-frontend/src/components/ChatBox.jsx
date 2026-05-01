@@ -25,7 +25,7 @@ const ChatBox = ({ callId }) => {
       <div className="mb-4">
         {messages.map((msg, i) => (
           <div key={i}>
-            <strong>{msg.role}:</strong> {msg.text}
+            <strong>{msg.role}:</strong>{msg.text}
           </div>
         ))}
       </div>
