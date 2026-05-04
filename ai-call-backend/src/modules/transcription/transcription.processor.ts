@@ -136,10 +136,10 @@ export class TranscriptionProcessor implements OnModuleInit {
           const totalTime = ((Date.now() - pipelineStart) / 1000).toFixed(2);
 
           console.log(`
-========================================
-✅ COMPLETED CALL: ${callId}
-⏱ Total Time: ${totalTime}s
-========================================
+          ========================================
+          ✅ COMPLETED CALL: ${callId}
+          ⏱ Total Time: ${totalTime}s
+          ========================================
           `);
 
         } catch (error) {

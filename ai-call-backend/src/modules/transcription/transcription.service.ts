@@ -52,9 +52,9 @@ export class TranscriptionService {
           "whisper",
           normalizedPath,
           "--model", "small",        
-          "--task", "translate",    //  KEEP (multilingual)
+          "--task", "translate",    //  (multilingual)
           "--threads", "2",
-          "--fp16", "False",        // CPU optimization
+          "--fp16", "False",        
           "--output_format", "txt",
           "--output_dir", outputDir,
         ]
