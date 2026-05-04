@@ -2,13 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { VectorService } from '../vector/vector.service';
 import { LLMService } from '../llm/llm.service';
 import { CallsService } from '../calls/calls.service';
+import { IntentService } from './intent.service';
+import { CallDocument } from '../calls/call.schema';
 
 @Injectable()
 export class ChatService {
   constructor(
     private readonly vectorService: VectorService,
     private readonly llmService: LLMService,
-    private readonly callsService: CallsService
+    private readonly callsService: CallsService,
+    private readonly intentService: IntentService
   ) { }
 
   async askQuestion(question: string, userId: string, callId?: string) {
@@ -28,11 +31,34 @@ export class ChatService {
 
   async handleMultiCall(question: string, userId: string) {
 
-    //  STEP 1: find relevant callIds using embeddings
+    //  SUMMARY MODE (NO LLM )
+    if (this.intentService.isSummaryQuery(question)) {
+
+      const calls = await this.callsService.findAllByUser(userId);
+
+      return {
+        type: "multi_call",
+        results: calls.map(call => ({
+          callId: call._id,
+          fileName: call.fileName,
+          answer: call.shortSummary || "No summary available"
+        }))
+      };
+    }
+
+    //  NORMAL RAG FLOW
+
     const callIds = await this.vectorService.findRelevantCalls(question, userId);
 
-    //  STEP 2: get those calls from DB
-    const calls = await this.callsService.findByIds(callIds);
+    //  fallback (important)
+    let calls: CallDocument[] = [];
+
+    if (!callIds.length) {
+      console.log("Fallback: using all calls");
+      calls = await this.callsService.findAllByUser(userId);
+    } else {
+      calls = await this.callsService.findByIds(callIds);
+    }
 
     const results = await Promise.all(
       calls.map(async (call) => {
@@ -59,7 +85,6 @@ export class ChatService {
 
     return {
       type: "multi_call",
-      resultslog: results,
       results: results.filter(Boolean),
     };
   }

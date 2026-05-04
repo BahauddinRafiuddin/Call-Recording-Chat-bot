@@ -19,7 +19,7 @@ export class TranscriptionService {
       const ffmpeg = spawn('ffmpeg', [
         '-i', fullPath,
         '-f', 'segment',
-        '-segment_time', '120', // 2 min chunks
+        '-segment_time', '45', // 2 min chunks
         '-c', 'copy',
         outputPattern,
       ]);
@@ -53,6 +53,7 @@ export class TranscriptionService {
           normalizedPath,
           "--model", "small",        
           "--task", "translate",    //  KEEP (multilingual)
+          "--threads", "2",
           "--fp16", "False",        // CPU optimization
           "--output_format", "txt",
           "--output_dir", outputDir,
