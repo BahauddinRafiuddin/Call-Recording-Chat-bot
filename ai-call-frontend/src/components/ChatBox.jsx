@@ -10,16 +10,13 @@ const ChatBox = ({ callId }) => {
       question,
       callId,
     });
-
     setMessages([
       ...messages,
       { role: "user", text: question },
       { role: "ai", text: res.data.answer },
     ]);
-
     setQuestion("");
   };
-
   return (
     <div>
       <div className="mb-4">
