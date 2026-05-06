@@ -11,7 +11,6 @@ const ChatWorkspace = ({ onMenuClick }) => {
       text: "Hi, Ask me anything about your call recordings. Select a specific call above or query across all of them.",
     },
   ]);
-
   const handleNewMessage = (msg) => {
     setMessages((prev) => {
       if (msg.replaceLast) {
@@ -20,7 +19,6 @@ const ChatWorkspace = ({ onMenuClick }) => {
       return [...prev, msg];
     });
   };
-
   return (
     <div className="flex-1 flex flex-col min-w-0 bg-gray-50 overflow-hidden">
       {/* Mobile topbar with hamburger */}

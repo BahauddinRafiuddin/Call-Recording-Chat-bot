@@ -102,7 +102,6 @@ const ChatInput = ({ callId, onNewMessage }) => {
       handleAsk();
     }
   };
-
   return (
     <div className="px-4 py-3 border-t bg-white flex items-center gap-3">
       <input
@@ -136,5 +135,4 @@ const ChatInput = ({ callId, onNewMessage }) => {
     </div>
   );
 };
-
 export default ChatInput;

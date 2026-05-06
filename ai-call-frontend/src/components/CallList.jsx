@@ -15,7 +15,6 @@ const dotStyle = {
 
 const CallList = () => {
   const { calls, fetchCalls } = useCalls();
-
   const handleDelete = async (id, e) => {
     e.stopPropagation();
     await deleteCall(id);
@@ -43,7 +42,6 @@ const CallList = () => {
               <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 010 1.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z"/>
             </svg>
           </div>
-
           <div className="flex-1 min-w-0">
             <p className="text-xs text-white/80 truncate">{call.fileName}</p>
             <div className="flex items-center gap-1.5 mt-0.5">
@@ -53,7 +51,6 @@ const CallList = () => {
               </span>
             </div>
           </div>
-
           <button
             onClick={(e) => handleDelete(call._id, e)}
             className="opacity-0 group-hover:opacity-100 p-1.5 rounded-md cursor-pointer hover:bg-red-400/15 transition-all"
